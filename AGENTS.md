@@ -30,6 +30,35 @@ This block is written and re-added by `turbo` before repository-scoped commands 
 - Never backfill, migrate, or preserve rows, and never spend effort on keeping old data working. Every schema change means a clean slate.
 - Apply schema changes only with `npm run db:push` (`drizzle-kit push`). Never generate or run migrations (`drizzle-kit generate` / `drizzle-kit migrate`), and never add migration files or migration scripts.
 
+## Forms
+
+Reference implementation: `apps/web/components/bot-dialog.tsx`, `apps/web/actions/bot.ts`, `apps/web/lib/bot.ts`.
+
+### Validation schema
+
+- Derive schemas from the Drizzle table with `createInsertSchema` from `drizzle-zod`, and export them from `packages/db/src/schema.ts` next to the table (`insertBotSchema`). Never hand-write a parallel `z.object` for a table. The installed `drizzle-orm` has no `drizzle-orm/zod` entry point; import from `drizzle-zod`.
+- Put trimming, length limits, and user-facing error messages in the `createInsertSchema` refinement callbacks, so the client and the server share them.
+- Narrow the table schema to the fields the user fills in with `.pick()` in `apps/web/lib/<entity>.ts`, and export the inferred input type from there. A `"use server"` file can only export async functions, so the schema cannot live in the action file.
+- Never accept server-owned columns (`id`, `userId`, `createdAt`, third-party IDs) from the client.
+
+### Server actions
+
+- Actions live in `apps/web/actions/<entity>.ts` with `"use server"` at the top of the file, and take a typed object, not `FormData`.
+- Start every action with `const { isAuthenticated, userId } = await auth()` from `@clerk/nextjs/server`, and throw if not authenticated. `userId` only ever comes from Clerk.
+- Re-parse the input with the same schema on the server; the client check is for UX only.
+- Normalize empty optional strings to `null` before inserting.
+- Call `refresh()` from `next/cache` after the mutation, and return the created row.
+
+### Form UI
+
+- Use `react-hook-form` with `zodResolver` from `@hookform/resolvers/zod`, typed with the inferred input type, with `defaultValues` for every field.
+- Compose with shadcn `FieldGroup` + `Field` + `FieldLabel` + `FieldError`, one `Controller` per field. Set `data-invalid` on `Field` and `aria-invalid` on the control. Never lay out a form with raw `div`s.
+- Add missing components with `npx shadcn@latest add <name>` run from `apps/web`; they land in `packages/ui` and are imported from `@workspace/ui/components/*`. This is the Base UI variant: triggers take `render={<Button />}`, not `asChild`.
+- In a dialog, give the `<form>` an `id` and put the submit button in `DialogFooter` with the matching `form` attribute. Reset the form when the dialog opens.
+- Generate random values (seeds, IDs) in event handlers, never during render.
+- Pending state: disable the submit button and show `Spinner` while `formState.isSubmitting`.
+- On failure, set a `root` error and render it with `FieldError`. On success, close the dialog and confirm with `toast` from `sonner`.
+
 ## DiceBear
 
 Use DiceBear 10. Documentation: <https://www.dicebear.com/llms.txt>

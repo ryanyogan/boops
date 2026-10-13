@@ -11,6 +11,7 @@ import {
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 
+import { BotDialog } from "@/components/bot-dialog"
 import { ChatAvatar } from "@/components/chat-avatar"
 
 export default async function Page() {
@@ -30,10 +31,12 @@ export default async function Page() {
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button variant="secondary">
-            <PlusIcon data-icon="inline-start" />
-            Create a new bot
-          </Button>
+          <BotDialog>
+            <Button variant="secondary">
+              <PlusIcon data-icon="inline-start" />
+              Create a new bot
+            </Button>
+          </BotDialog>
         </EmptyContent>
       </Empty>
     </div>
