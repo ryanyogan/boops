@@ -35,8 +35,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
   sidebarMenuButtonVariants,
+  useSidebar,
 } from "@boops/ui/components/sidebar"
+import { cn } from "@boops/ui/lib/utils"
 
 import { BotDialog, type BotDialogHandle } from "@/components/bot-dialog"
 import { ChatAvatar } from "@/components/chat-avatar"
@@ -49,6 +52,9 @@ export function AppSidebar({
   const botDialog = useRef<BotDialogHandle>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const router = useRouter()
+  const { state, isMobile } = useSidebar()
+  // The mobile sheet always shows the expanded sidebar
+  const collapsed = state === "collapsed" && !isMobile
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -63,7 +69,7 @@ export function AppSidebar({
   }, [])
 
   return (
-    <Sidebar {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -92,15 +98,26 @@ export function AppSidebar({
           </DropdownMenuContent>
         </DropdownMenu>
         <BotDialog ref={botDialog} />
-        <Button
-          variant="outline"
-          className="w-full min-w-0 justify-start border-input bg-transparent px-2.5 py-1 text-base font-normal text-muted-foreground md:text-sm dark:bg-input/30"
-          onClick={() => setSearchOpen(true)}
-        >
-          <SearchIcon data-icon="inline-start" />
-          Search
-          <Kbd className="ml-auto">⌘K</Kbd>
-        </Button>
+        {collapsed ? (
+          <Button
+            variant="secondary"
+            size="icon"
+            aria-label="Search"
+            onClick={() => setSearchOpen(true)}
+          >
+            <SearchIcon />
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            className="w-full min-w-0 justify-start border-input bg-transparent px-2.5 py-1 text-base font-normal text-muted-foreground md:text-sm dark:bg-input/30"
+            onClick={() => setSearchOpen(true)}
+          >
+            <SearchIcon data-icon="inline-start" />
+            Search
+            <Kbd className="ml-auto">⌘K</Kbd>
+          </Button>
+        )}
         <CommandDialog
           open={searchOpen}
           onOpenChange={setSearchOpen}
@@ -147,6 +164,7 @@ export function AppSidebar({
                 <SidebarMenuItem key={chat.id}>
                   <SidebarMenuButton
                     size="lg"
+                    tooltip={chat.name}
                     render={<Link href={`/chats/${chat.id}`} />}
                   >
                     <ChatAvatar seed={chat.avatar} />
@@ -185,17 +203,22 @@ export function AppSidebar({
               appearance={{
                 elements: {
                   rootBox: "flex w-full",
-                  userButtonTrigger: sidebarMenuButtonVariants(),
+                  // Leave room for the avatar inside the collapsed button
+                  userButtonTrigger: cn(
+                    sidebarMenuButtonVariants(),
+                    "group-data-[collapsible=icon]:p-1!"
+                  ),
                   userButtonBox: "w-full flex-row-reverse justify-end gap-2",
                   userButtonAvatarBox: "size-6",
                   userButtonOuterIdentifier:
-                    "truncate pl-0 text-sm font-normal text-inherit",
+                    "truncate pl-0 text-sm font-normal text-inherit group-data-[collapsible=icon]:hidden",
                 },
               }}
             />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   )
 }
