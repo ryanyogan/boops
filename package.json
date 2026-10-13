@@ -5,6 +5,7 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "start": "npm run start --workspace=web",
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck"
