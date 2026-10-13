@@ -2,7 +2,7 @@ import { Avatar, Style, type StyleOptions } from "@dicebear/core"
 import gaze from "@dicebear/styles/gaze.json" with { type: "json" }
 import Image from "next/image"
 
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@boops/ui/lib/utils"
 
 const style = new Style(gaze)
 

@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { PlusIcon } from "lucide-react"
 
-import { Button } from "@workspace/ui/components/button"
+import { Button } from "@boops/ui/components/button"
 import {
   Empty,
   EmptyContent,
@@ -9,7 +9,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@workspace/ui/components/empty"
+} from "@boops/ui/components/empty"
 
 import { BotDialog } from "@/components/bot-dialog"
 import { ChatAvatar } from "@/components/chat-avatar"
@@ -18,7 +18,7 @@ export default async function Page() {
   await auth.protect()
 
   return (
-    <div className="flex min-h-[calc(100svh-3.5rem)]">
+    <div className="flex min-h-svh">
       <Empty>
         <EmptyHeader>
           <EmptyMedia>

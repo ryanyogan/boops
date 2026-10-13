@@ -3,13 +3,12 @@ import { shadcn } from "@clerk/ui/themes"
 import { Geist, Geist_Mono } from "next/font/google"
 
 import "./globals.css"
-import { SiteHeader } from "@/components/site-header"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@workspace/ui/components/sonner"
-import { TooltipProvider } from "@workspace/ui/components/tooltip"
-import { cn } from "@workspace/ui/lib/utils";
+import { Toaster } from "@boops/ui/components/sonner"
+import { TooltipProvider } from "@boops/ui/components/tooltip"
+import { cn } from "@boops/ui/lib/utils"
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'})
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
@@ -25,15 +24,19 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
+      className={cn(
+        "antialiased",
+        fontMono.variable,
+        "font-sans",
+        geist.variable
+      )}
     >
       <body>
-        <ClerkProvider appearance={{ theme: shadcn }}>
+        <ClerkProvider
+          appearance={{ theme: shadcn, cssLayerName: "components" }}
+        >
           <ThemeProvider>
-            <TooltipProvider>
-              <SiteHeader />
-              {children}
-            </TooltipProvider>
+            <TooltipProvider>{children}</TooltipProvider>
             <Toaster />
           </ThemeProvider>
         </ClerkProvider>

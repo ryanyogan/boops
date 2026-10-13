@@ -1,5 +1,5 @@
 {
-  "name": "@workspace/db",
+  "name": "@boops/db",
   "version": "0.0.0",
   "type": "module",
   "private": true,
@@ -17,8 +17,8 @@
   "devDependencies": {
     "@types/node": "^20",
     "@types/pg": "^8.23.1",
-    "@workspace/eslint-config": "*",
-    "@workspace/typescript-config": "*",
+    "@boops/eslint-config": "*",
+    "@boops/typescript-config": "*",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.11",
     "eslint": "^10",

@@ -6,7 +6,7 @@ import { useState } from "react"
 import { Controller, useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
 
-import { Button } from "@workspace/ui/components/button"
+import { Button } from "@boops/ui/components/button"
 import {
   Dialog,
   DialogClose,
@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@workspace/ui/components/dialog"
+} from "@boops/ui/components/dialog"
 import {
   Field,
   FieldContent,
@@ -25,10 +25,10 @@ import {
   FieldGroup,
   FieldLabel,
   FieldTitle,
-} from "@workspace/ui/components/field"
-import { Input } from "@workspace/ui/components/input"
-import { Spinner } from "@workspace/ui/components/spinner"
-import { Textarea } from "@workspace/ui/components/textarea"
+} from "@boops/ui/components/field"
+import { Input } from "@boops/ui/components/input"
+import { Spinner } from "@boops/ui/components/spinner"
+import { Textarea } from "@boops/ui/components/textarea"
 
 import { createBot } from "@/actions/bot"
 import { ChatAvatar } from "@/components/chat-avatar"

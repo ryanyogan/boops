@@ -53,7 +53,7 @@ Reference implementation: `apps/web/components/bot-dialog.tsx`, `apps/web/action
 
 - Use `react-hook-form` with `zodResolver` from `@hookform/resolvers/zod`, typed with the inferred input type, with `defaultValues` for every field.
 - Compose with shadcn `FieldGroup` + `Field` + `FieldLabel` + `FieldError`, one `Controller` per field. Set `data-invalid` on `Field` and `aria-invalid` on the control. Never lay out a form with raw `div`s.
-- Add missing components with `npx shadcn@latest add <name>` run from `apps/web`; they land in `packages/ui` and are imported from `@workspace/ui/components/*`. This is the Base UI variant: triggers take `render={<Button />}`, not `asChild`.
+- Add missing components with `npx shadcn@latest add <name>` run from `apps/web`; they land in `packages/ui` and are imported from `@boops/ui/components/*`. This is the Base UI variant: triggers take `render={<Button />}`, not `asChild`.
 - In a dialog, give the `<form>` an `id` and put the submit button in `DialogFooter` with the matching `form` attribute. Reset the form when the dialog opens.
 - Generate random values (seeds, IDs) in event handlers, never during render.
 - Pending state: disable the submit button and show `Spinner` while `formState.isSubmitting`.

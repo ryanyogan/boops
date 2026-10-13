@@ -1,6 +1,6 @@
 import type { z } from "zod"
 
-import { insertBotSchema } from "@workspace/db/schema"
+import { insertBotSchema } from "@boops/db/schema"
 
 // The fields a user fills in; everything else is set on the server.
 export const createBotSchema = insertBotSchema

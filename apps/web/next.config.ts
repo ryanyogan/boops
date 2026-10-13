@@ -6,7 +6,8 @@ import type { NextConfig } from "next"
 config({ path: "../../.env.local", quiet: true })
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@workspace/ui", "@workspace/db"],
+  devIndicators: false,
+  transpilePackages: ["@boops/ui", "@boops/db"],
 }
 
 export default nextConfig

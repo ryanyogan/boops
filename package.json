@@ -9,12 +9,12 @@
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck",
-    "db:push": "npm run db:push --workspace=@workspace/db",
-    "db:studio": "npm run db:studio --workspace=@workspace/db"
+    "db:push": "npm run db:push --workspace=@boops/db",
+    "db:studio": "npm run db:studio --workspace=@boops/db"
   },
   "devDependencies": {
-    "@workspace/eslint-config": "*",
-    "@workspace/typescript-config": "*",
+    "@boops/eslint-config": "*",
+    "@boops/typescript-config": "*",
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "turbo": "^2.11.7",
