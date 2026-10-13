@@ -8,7 +8,9 @@
     "start": "npm run start --workspace=web",
     "lint": "turbo lint",
     "format": "turbo format",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "db:push": "npm run db:push --workspace=@workspace/db",
+    "db:studio": "npm run db:studio --workspace=@workspace/db"
   },
   "devDependencies": {
     "@workspace/eslint-config": "*",
