@@ -4,7 +4,7 @@ import { UserButton } from "@clerk/nextjs"
 import { formatDistanceToNowStrict } from "date-fns"
 import { PlusIcon, SearchIcon, UsersIcon } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@boops/ui/components/button"
@@ -52,6 +52,7 @@ export function AppSidebar({
   const botDialog = useRef<BotDialogHandle>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const router = useRouter()
+  const { chatId } = useParams<{ chatId?: string }>()
   const { state, isMobile } = useSidebar()
   // The mobile sheet always shows the expanded sidebar
   const collapsed = state === "collapsed" && !isMobile
@@ -165,6 +166,7 @@ export function AppSidebar({
                   <SidebarMenuButton
                     size="lg"
                     tooltip={chat.name}
+                    isActive={chat.id === chatId}
                     render={<Link href={`/chats/${chat.id}`} />}
                   >
                     <ChatAvatar seed={chat.avatar} />

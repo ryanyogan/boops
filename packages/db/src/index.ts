@@ -19,3 +19,6 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export const db = drizzle({ client: pool, schema, casing: "snake_case" })
+
+// Query operators, so apps don't need their own drizzle-orm dependency
+export { and, eq, inArray } from "drizzle-orm"

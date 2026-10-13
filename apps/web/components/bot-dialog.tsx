@@ -1,11 +1,23 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ShuffleIcon } from "lucide-react"
-import { useImperativeHandle, useState } from "react"
+import { ShuffleIcon, Trash2Icon } from "lucide-react"
+import { unstable_rethrow } from "next/navigation"
+import { useImperativeHandle, useState, useTransition } from "react"
 import { Controller, useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@boops/ui/components/alert-dialog"
 import { Button } from "@boops/ui/components/button"
 import {
   Dialog,
@@ -30,7 +42,9 @@ import { Input } from "@boops/ui/components/input"
 import { Spinner } from "@boops/ui/components/spinner"
 import { Textarea } from "@boops/ui/components/textarea"
 
-import { createBot } from "@/actions/bot"
+import type { Bot } from "@boops/db/schema"
+
+import { createBot, deleteBot, updateBot } from "@/actions/bot"
 import { ChatAvatar } from "@/components/chat-avatar"
 import { createBotSchema, type CreateBotInput } from "@/lib/bot"
 
@@ -61,14 +75,21 @@ const presets = [
 
 export type BotDialogHandle = { open: () => void }
 
+type EditableBot = Pick<Bot, "id" | "name" | "avatar" | "job" | "instructions">
+
 export function BotDialog({
+  bot,
   children,
   ref,
 }: {
+  // Edits this bot when given; creates a new one otherwise
+  bot?: EditableBot
   children?: React.ReactElement
   ref?: React.Ref<BotDialogHandle>
 }) {
   const [open, setOpen] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [isDeleting, startDeleting] = useTransition()
 
   const form = useForm<CreateBotInput>({
     resolver: zodResolver(createBotSchema),
@@ -82,10 +103,19 @@ export function BotDialog({
   }
 
   function onOpenChange(nextOpen: boolean) {
-    // Every new bot starts from a blank form and a fresh face
     if (nextOpen) {
-      form.reset()
-      shuffle()
+      if (bot) {
+        form.reset({
+          name: bot.name,
+          avatar: bot.avatar,
+          job: bot.job,
+          instructions: bot.instructions ?? "",
+        })
+      } else {
+        // Every new bot starts from a blank form and a fresh face
+        form.reset()
+        shuffle()
+      }
     }
     setOpen(nextOpen)
   }
@@ -95,14 +125,38 @@ export function BotDialog({
 
   async function onSubmit(data: CreateBotInput) {
     try {
-      const bot = await createBot(data)
-      toast.success(`${bot.name} is ready.`)
+      if (bot) {
+        const updated = await updateBot(bot.id, data)
+        toast.success(`${updated.name} is updated.`)
+      } else {
+        const created = await createBot(data)
+        toast.success(`${created.name} is ready.`)
+      }
       setOpen(false)
     } catch {
       form.setError("root", {
-        message: "Couldn't create the bot. Try again.",
+        message: bot
+          ? "Couldn't save the bot. Try again."
+          : "Couldn't create the bot. Try again.",
       })
     }
+  }
+
+  function onDelete() {
+    if (!bot) return
+
+    startDeleting(async () => {
+      try {
+        await deleteBot(bot.id)
+      } catch (error) {
+        // Success arrives as a redirect, which Next.js has to handle itself
+        unstable_rethrow(error)
+        setConfirmOpen(false)
+        form.setError("root", {
+          message: "Couldn't delete the bot. Try again.",
+        })
+      }
+    })
   }
 
   return (
@@ -110,28 +164,32 @@ export function BotDialog({
       {children && <DialogTrigger render={children} />}
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>New bot</DialogTitle>
+          <DialogTitle>{bot ? "Edit bot" : "New bot"}</DialogTitle>
           <DialogDescription>
-            Give it a face, a name, and a job to do.
+            {bot
+              ? "Change its face, its name, or the job it does."
+              : "Give it a face, a name, and a job to do."}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-wrap gap-2">
-          {presets.map((preset) => (
-            <Button
-              key={preset.job}
-              type="button"
-              variant="outline"
-              size="sm"
-              className="rounded-full"
-              onClick={() => {
-                form.setValue("job", preset.job, { shouldValidate: true })
-                form.setValue("instructions", preset.instructions)
-              }}
-            >
-              {preset.job}
-            </Button>
-          ))}
-        </div>
+        {!bot && (
+          <div className="flex flex-wrap gap-2">
+            {presets.map((preset) => (
+              <Button
+                key={preset.job}
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                onClick={() => {
+                  form.setValue("job", preset.job, { shouldValidate: true })
+                  form.setValue("instructions", preset.instructions)
+                }}
+              >
+                {preset.job}
+              </Button>
+            ))}
+          </div>
+        )}
         <form id={FORM_ID} onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Field orientation="horizontal">
@@ -211,12 +269,50 @@ export function BotDialog({
           </FieldGroup>
         </form>
         <DialogFooter>
+          {bot && (
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+              <AlertDialogTrigger
+                render={
+                  <Button
+                    variant="destructive"
+                    className="sm:mr-auto"
+                    disabled={isSubmitting}
+                  />
+                }
+              >
+                <Trash2Icon data-icon="inline-start" />
+                Delete
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete {bot.name}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This permanently deletes the bot and your chat with it. This
+                    can&apos;t be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isDeleting}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    variant="destructive"
+                    disabled={isDeleting}
+                    onClick={onDelete}
+                  >
+                    {isDeleting && <Spinner data-icon="inline-start" />}
+                    Delete bot
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <DialogClose render={<Button variant="outline" />}>
             Cancel
           </DialogClose>
           <Button type="submit" form={FORM_ID} disabled={isSubmitting}>
             {isSubmitting && <Spinner data-icon="inline-start" />}
-            Create bot
+            {bot ? "Save changes" : "Create bot"}
           </Button>
         </DialogFooter>
       </DialogContent>
