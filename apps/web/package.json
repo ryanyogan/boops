@@ -12,13 +12,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@boops/db": "*",
+    "@boops/ui": "*",
     "@clerk/nextjs": "^7.9.14",
     "@clerk/ui": "^1.40.0",
     "@dicebear/core": "^10.7.0",
     "@dicebear/styles": "^10.6.0",
     "@hookform/resolvers": "^5.9.1",
-    "@boops/db": "*",
-    "@boops/ui": "*",
+    "date-fns": "^4.4.0",
     "lucide-react": "^1.56.0",
     "next": "16.4.0",
     "next-themes": "^0.4.6",
@@ -29,12 +30,12 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@boops/eslint-config": "*",
+    "@boops/typescript-config": "*",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@boops/eslint-config": "*",
-    "@boops/typescript-config": "*",
     "dotenv": "^17.4.2",
     "eslint": "^10",
     "typescript": "^5"

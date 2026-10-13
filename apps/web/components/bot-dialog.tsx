@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ShuffleIcon } from "lucide-react"
-import { useState } from "react"
+import { useImperativeHandle, useState } from "react"
 import { Controller, useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -59,7 +59,15 @@ const presets = [
   },
 ]
 
-export function BotDialog({ children }: { children: React.ReactElement }) {
+export type BotDialogHandle = { open: () => void }
+
+export function BotDialog({
+  children,
+  ref,
+}: {
+  children?: React.ReactElement
+  ref?: React.Ref<BotDialogHandle>
+}) {
   const [open, setOpen] = useState(false)
 
   const form = useForm<CreateBotInput>({
@@ -82,6 +90,9 @@ export function BotDialog({ children }: { children: React.ReactElement }) {
     setOpen(nextOpen)
   }
 
+  // Lets a caller without a trigger element (a menu item) open the dialog
+  useImperativeHandle(ref, () => ({ open: () => onOpenChange(true) }))
+
   async function onSubmit(data: CreateBotInput) {
     try {
       const bot = await createBot(data)
@@ -96,7 +107,7 @@ export function BotDialog({ children }: { children: React.ReactElement }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger render={children} />
+      {children && <DialogTrigger render={children} />}
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New bot</DialogTitle>
