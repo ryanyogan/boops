@@ -2,10 +2,21 @@
 
 import { UserButton } from "@clerk/nextjs"
 import { formatDistanceToNowStrict } from "date-fns"
-import { PlusIcon, UsersIcon } from "lucide-react"
-import { useRef } from "react"
+import { PlusIcon, SearchIcon, UsersIcon } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@boops/ui/components/button"
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@boops/ui/components/command"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@boops/ui/components/dropdown-menu"
+import { Kbd } from "@boops/ui/components/kbd"
 import {
   Sidebar,
   SidebarContent,
@@ -35,14 +47,33 @@ export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & { chats: ChatListItem[] }) {
   const botDialog = useRef<BotDialogHandle>(null)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault()
+        setSearchOpen((open) => !open)
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown)
+    return () => document.removeEventListener("keydown", onKeyDown)
+  }, [])
 
   return (
     <Sidebar {...props}>
-      <SidebarHeader className="flex-row justify-end">
+      <SidebarHeader>
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="secondary" size="icon" aria-label="Create" />
+              <Button
+                variant="secondary"
+                size="icon"
+                aria-label="Create"
+                className="self-end"
+              />
             }
           >
             <PlusIcon />
@@ -61,6 +92,52 @@ export function AppSidebar({
           </DropdownMenuContent>
         </DropdownMenu>
         <BotDialog ref={botDialog} />
+        <Button
+          variant="outline"
+          className="w-full min-w-0 justify-start border-input bg-transparent px-2.5 py-1 text-base font-normal text-muted-foreground md:text-sm dark:bg-input/30"
+          onClick={() => setSearchOpen(true)}
+        >
+          <SearchIcon data-icon="inline-start" />
+          Search
+          <Kbd className="ml-auto">⌘K</Kbd>
+        </Button>
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search chats"
+          description="Search for a chat to open"
+        >
+          {/* Match on the name only; ids are the values so that chats
+              sharing a name stay distinct */}
+          <Command
+            filter={(_value, search, keywords = []) =>
+              keywords.join(" ").toLowerCase().includes(search.toLowerCase())
+                ? 1
+                : 0
+            }
+          >
+            <CommandInput placeholder="Search chats..." />
+            <CommandList>
+              <CommandEmpty>No chats found.</CommandEmpty>
+              <CommandGroup heading="Chats">
+                {chats.map((chat) => (
+                  <CommandItem
+                    key={chat.id}
+                    value={chat.id}
+                    keywords={[chat.name]}
+                    onSelect={() => {
+                      setSearchOpen(false)
+                      router.push(`/chats/${chat.id}`)
+                    }}
+                  >
+                    <ChatAvatar seed={chat.avatar} className="size-6" />
+                    <span className="truncate">{chat.name}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </CommandDialog>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -68,7 +145,10 @@ export function AppSidebar({
             <SidebarMenu>
               {chats.map((chat) => (
                 <SidebarMenuItem key={chat.id}>
-                  <SidebarMenuButton size="lg">
+                  <SidebarMenuButton
+                    size="lg"
+                    render={<Link href={`/chats/${chat.id}`} />}
+                  >
                     <ChatAvatar seed={chat.avatar} />
                     <div className="grid flex-1 leading-tight">
                       <div className="flex items-baseline gap-2">
