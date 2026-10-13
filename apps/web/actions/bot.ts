@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server"
 import { refresh } from "next/cache"
 
 import { db } from "@workspace/db"
-import { bots } from "@workspace/db/schema"
+import { bots, chatMembers, chats } from "@workspace/db/schema"
 
 import { createBotSchema, type CreateBotInput } from "@/lib/bot"
 
@@ -14,12 +14,24 @@ export async function createBot(input: CreateBotInput) {
 
   const { instructions, ...data } = createBotSchema.parse(input)
 
-  const [bot] = await db
-    .insert(bots)
-    .values({ ...data, instructions: instructions || null, userId })
-    .returning()
+  // A bot always comes with its direct chat, so create all three rows or none.
+  const bot = await db.transaction(async (tx) => {
+    const [bot] = await tx
+      .insert(bots)
+      .values({ ...data, instructions: instructions || null, userId })
+      .returning()
+
+    const [chat] = await tx
+      .insert(chats)
+      .values({ userId, kind: "direct" })
+      .returning({ id: chats.id })
+
+    await tx.insert(chatMembers).values({ chatId: chat!.id, botId: bot!.id })
+
+    return bot!
+  })
 
   refresh()
 
-  return bot!
+  return bot
 }
