@@ -1,0 +1,3 @@
+# agent tooling, not needed to build or run the app
+.claude
+.agents
